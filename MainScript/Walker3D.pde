@@ -1,103 +1,86 @@
 class Walker{
-  ArrayList<IntList> linesList;
+  ArrayList<PVector> points;
   float xPos;
   float yPos;
+  float zPos;
   float xSpeed;
   float ySpeed;
+  float zSpeed;
   float timeX;
   float timeY;
+  float timeZ;
   boolean inBounds;
   
-  ArrayList<IntList> colorsList;
+  float hue;
   
-  float timeRed;
-  float timeGreen;
-  float timeBlue;
-  
-  Walker(float xs, float ys){
-    this.linesList = new ArrayList<IntList>();
+  Walker(float xs, float ys, float zs){
+    this.points = new ArrayList<PVector>();
+    this.points.add(new PVector(0, 0, 0));
     this.xPos = 0;
     this.yPos = 0;
+    this.zPos = 0;
     this.xSpeed = xs;
     this.ySpeed = ys;
+    this.zSpeed = zs;
     this.timeX = random(10000);
     this.timeY = random(10000);
+    this.timeZ = random(10000);
     this.inBounds = true;
     
-    this.colorsList = new ArrayList<IntList>();
-    
-    this.timeRed = random(10000);
-    this.timeGreen = random(10000);
-    this.timeBlue = random(10000);
+    this.hue = random(255);
   }
   
   void update(){
     if(this.inBounds){
-      IntList curr_line = new IntList();
+      PVector next_point = new PVector();
       float curr_xSpeed;
       float curr_ySpeed;
-      curr_line.append((int)xPos);
-      curr_line.append((int)yPos);
-      if(this.linesList.size() == 0){
+      float curr_zSpeed;
+      if(this.points.size() == 0){
         curr_xSpeed = this.xSpeed;
         curr_ySpeed = this.ySpeed;
+        curr_zSpeed = this.zSpeed;
       } else {
         float varX = noise(timeX);
         float varY = noise(timeY);
+        float varZ = noise(timeZ);
         varX = map(varX, 0, 1, -rand, rand);
         varY = map(varY, 0, 1, -rand, rand);
-        //curr_xSpeed = this.xSpeed + varX;
-        //curr_ySpeed = this.ySpeed + varY;
+        varZ = map(varZ, 0, 1, -rand, rand);
         curr_xSpeed = varX;
         curr_ySpeed = varY;
+        curr_zSpeed = varZ;
         this.timeX += timeStep;
         this.timeY += timeStep;
+        this.timeZ += timeStep;
       }
-      xPos += curr_xSpeed;
-      yPos += curr_ySpeed;
-      curr_line.append((int)xPos);
-      curr_line.append((int)yPos);
+      this.xPos += curr_xSpeed;
+      this.yPos += curr_ySpeed;
+      this.zPos += curr_zSpeed;
+      next_point.x = this.xPos;
+      next_point.y = this.yPos;
+      next_point.z = this.zPos;
       this.xSpeed = curr_xSpeed;
       this.ySpeed = curr_ySpeed;
-      this.linesList.add(curr_line);
-      if(pow(this.xPos,2) + pow(this.yPos,2) > pow(globalBoundaries,2)){
+      this.zSpeed = curr_zSpeed;
+      this.points.add(next_point);
+      if(pow(this.xPos,2) + pow(this.yPos,2) + pow(this.zPos,2) > pow(globalBoundaries,2)){
         this.inBounds = false;
       }
     }
   }
   
   void display(){
-    for(int i=0; i<this.linesList.size(); i++){
-      IntList curr_line = linesList.get(i);
-      if(i == this.colorsList.size()){
-        colorsList.add(colorCreate());
+    float hu = this.hue;
+    beginShape();
+    for(PVector point : points){
+      stroke(hu, 255, 255, 50);
+      vertex(point.x, point.y, point.z);
+      hu += 2;
+      if(hu > 255){
+        hu = 0;
       }
-      colorChange(colorsList.get(i));
-      line(curr_line.get(0), curr_line.get(1), curr_line.get(2), curr_line.get(3));
     }
-  }
-  
-  IntList colorCreate(){
-    IntList curr_color = new IntList();
-    float red = noise(this.timeRed);
-    float green = noise(this.timeGreen);
-    float blue = noise(this.timeBlue);
-    red = map(red, 0, 1, 0, 255);
-    green = map(green, 0, 1, 0, 255);
-    blue = map(blue, 0, 1, 0, 255);
-    this.timeRed += timeStep;
-    this.timeGreen += timeStep;
-    this.timeBlue += timeStep;
-    curr_color.append((int)red);
-    curr_color.append((int)green);
-    curr_color.append((int)blue);  
-    return curr_color;
-  }
-  
-  void colorChange(IntList new_color){
-    int red = new_color.get(0);
-    int green = new_color.get(1);
-    int blue = new_color.get(2);
-    stroke(red, green, blue, 50);
+    endShape();
   }
 }
